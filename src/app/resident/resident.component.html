@@ -1,0 +1,185 @@
+<div class="card mt-5">
+  <p-toast></p-toast>
+  <p-toolbar styleClass="mb-4 gap-2">
+      <ng-template pTemplate="left">
+          <button pButton pRipple label="New" *ngIf="showbtCreate" icon="pi pi-plus" class="p-button-success me-2" (click)="openNew()"></button>
+          <button pButton pRipple [label]="'Delete'" icon="pi pi-trash" class="p-button-danger" [disabled]="!selectedResidents || !selectedResidents.length"></button>
+      </ng-template>
+
+      <ng-template pTemplate="right">
+          <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" class="me-2 inline-block"></p-fileUpload>
+          <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-help"></button>
+      </ng-template>
+  </p-toolbar>
+
+  <p-table
+      #dt
+      [value]="residents"
+      [rows]="10"
+      [paginator]="true"
+      [globalFilterFields]="['Name','Address', 'PhoneNumber', 'Email', 'Cccd','DateOfBirth']"
+      [tableStyle]="{ 'min-width': '75rem' }"
+      [(selection)]="selectedResidents"
+      [rowHover]="true"
+      dataKey="ResidentId"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+  >
+      <ng-template pTemplate="caption">
+          <div class="d-flex align-items-center justify-content-between">
+              <h5 class="m-0">CƯ DÂN</h5>
+              <span class="p-input-icon-left">
+                  <i class="pi pi-search"></i>
+                  <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"  placeholder="Search..." />
+              </span>
+          </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+          <tr>
+              <th style="width: 4rem">
+                  <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+              </th>
+              <th pSortableColumn="Name" style="min-width:10rem">Tên <p-sortIcon field="Name"></p-sortIcon></th>
+
+              <th pSortableColumn="Address" style="min-width:10rem">Địa chỉ <p-sortIcon field="Address"></p-sortIcon></th>
+              <th pSortableColumn="DateOfBirth" style="min-width:15rem">Ngày sinh <p-sortIcon field="DateOfBirth"></p-sortIcon></th>
+              <th pSortableColumn="Cccd" style="min-width:10rem">Căn cước <p-sortIcon field="Cccd"></p-sortIcon></th>
+              <th pSortableColumn="PhoneNumber" style="min-width:10rem">Số điện thoại <p-sortIcon field="PhoneNumber"></p-sortIcon></th>
+              <th pSortableColumn="Email" style="min-width:15rem">Email <p-sortIcon field="Email"></p-sortIcon></th>
+              <th style="min-width:10rem"></th>
+          </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-resident>
+          <tr>
+              <td>
+<p-tableCheckbox [value]="resident"></p-tableCheckbox>
+              </td>
+              <td>{{ resident.Name }}</td>
+              <td>{{ resident.Address }}</td>
+              <td>{{ resident.DateOfBirth | date: "dd/MM/yyyy" }}</td>
+              <td>{{ resident.Cccd }}</td>
+              <td>{{ resident.PhoneNumber}}</td>
+              <td>{{ resident.Email}}</td>
+              <td >
+                  <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" *ngIf="showbtEdit" (click)="editResident(resident)"></button>
+                  <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" *ngIf="showbtDelete" (click)="deleteResident(resident)"></button>
+                  <button pButton pRipple icon="pi pi-eye" class="p-button-rounded p-button-sea-green" (click)="detailResident(resident)" ></button>
+              </td>
+          </tr>
+      </ng-template>
+      <ng-template pTemplate="summary">
+          <div class="flex align-items-center justify-content-between">In total there are {{ residents ? residents.length : 0 }} residents.</div>
+      </ng-template>
+  </p-table>
+</div>
+<p-dialog [(visible)]="residentDialog" [style]="{ width: '450px' }"  header="Resident Details" [modal]="true" styleClass="p-fluid">
+  <ng-template pTemplate="content">
+      <div class="field">
+          <label for="Name">Name</label>
+          <input type="text" pInputText id="Name" [(ngModel)]="resident.Name" required autofocus />
+          <small class="p-error" *ngIf="submitted && !resident.Name">Name is repuire</small>
+      </div>
+      <div class="field">
+          <label for="PhoneNumber">PhoneNumber</label>
+          <input type="text" pInputText id="PhoneNumber" [(ngModel)]="resident.PhoneNumber" required autofocus />
+          <small class="p-error" *ngIf="submitted && !resident.PhoneNumber">PhoneNumber is repuire</small>
+      </div>
+      <div class="field">
+          <label for="Email">Email</label>
+          <input type="text" pInputText id="Email" [(ngModel)]="resident.Email" required autofocus />
+          <small class="p-error" *ngIf="submitted && !resident.Email">Email is repuire</small>
+      </div>
+      <div class="field">
+          <label for="Address">Address</label>
+          <input id="Address" pInputText [(ngModel)]="resident.Address"  required>
+          <small class="p-error" *ngIf="submitted && !resident.Address">Address is require</small>
+      </div>
+      <div class="field">
+          <label for="DateOfBirth">Date Of Birth</label>
+          <p-calendar [(ngModel)]="resident.DateOfBirth"></p-calendar>
+      </div>
+      <div class="field">
+          <label for="Cccd">IdentityCard</label>
+          <input id="Cccd" pInputText [(ngModel)]="resident.Cccd"  required>
+          <small class="p-error" *ngIf="submitted && !resident.Cccd">IdentityCard is require</small>
+      </div>
+      <div class="field">
+          <label for="Apartments">Apartments</label>
+        <p-multiSelect [options]="apartments" [(ngModel)]="selectedApartments" optionLabel="ApartmentName"></p-multiSelect>
+      </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+      <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+      <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveResident()"></button>
+  </ng-template>
+</p-dialog>
+
+<p-dialog header="Resident Detail" [(visible)]="residentDialog2" [style]="{width: '70vw'}">
+  <div  class="form-group" style="display: flex;justify-content: space-around;" >
+      <div class="field" >
+        <label for="Name" class="col-form-label" style="display: inline-flex;
+        width: 100%;">Name</label>
+        <input type="text" pInputText [(ngModel)]="residentDetail.Name"  class="form-control" style="width: 22vw;"  />
+      </div>
+      <div class="field">
+          <label for="PhoneNumber"  class="col-form-label" style="display: inline-flex;
+          width: 100%;">PhoneNumber</label>
+          <input type="text" pInputText class="form-control"   [(ngModel)]="residentDetail.PhoneNumber"  style="width: 22vw;" />
+      </div>
+  </div>
+  <div  class="form-group" style="display: flex;justify-content: space-around; margin-top: 10pt; margin-right: 42px;" >
+    <div class="field">
+      <label for="Email" style="display: inline-flex;
+      width: 100%;">Email</label>
+      <input type="text" pInputText style="width: 22vw;" [(ngModel)]="residentDetail.Email"  />
+    </div>
+    <div class="field">
+        <label for="Address"  style="display: inline-flex;
+        width: 100%;">Address</label>
+        <input id="Address" pInputText style="width: 22vw;" [(ngModel)]="residentDetail.Address"   >
+    </div>
+  </div>
+  <div class="form-group" style="display: flex;justify-content: space-around; margin-top: 10pt; margin-right: 4px;">
+      <div class="field">
+        <label for="DateOfBirth"  style="display: inline-flex;
+        width: 100%; margin-left: 10px;">Date Of Birth</label>
+        <p-calendar   [(ngModel)]="residentDetail.DateOfBirth" ></p-calendar>
+      </div>
+      <div class="field">
+          <label for="Cccd"  style="display: inline-flex;
+          width: 100%;">IdentityCard</label>
+          <input id="Cccd" pInputText  style="width: 22vw;" [(ngModel)]="residentDetail.Cccd"  >
+      </div>
+  </div>
+
+  <div class="field">
+          <label for="Apartments">Các căn hộ</label>
+
+        <p-table [value]="residentDetail.ResidentApartments" [tableStyle]="{ 'min-width': '50rem' }">
+          <ng-template pTemplate="header">
+              <tr>
+                  <th>Căn hộ</th>
+                  <th>Khu căn hộ</th>
+
+                  <th>Khu đô thị</th>
+                  <th>Địa chỉ</th>
+              </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-residentApartment>
+              <tr>
+                  <td>{{ residentApartment.Apartment.ApartmentName }}</td>
+                  <td>{{residentApartment.Apartment.BuildingCategory.CategoryName}}</td>
+
+                  <td>{{ residentApartment.Apartment.BuildingCategory.UrbanArea.UrbanName }}</td>
+                  <td>{{ residentApartment.Apartment.BuildingCategory.Address.Street}}-{{ residentApartment.Apartment.BuildingCategory.Address.Commune}}
+                    -{{ residentApartment.Apartment.BuildingCategory.Address.District}}-{{ residentApartment.Apartment.BuildingCategory.Address.City}}
+                  </td>
+
+              </tr>
+          </ng-template>
+        </p-table>
+  </div>
+</p-dialog>
+
+<p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>

@@ -1,0 +1,128 @@
+<!-- <p>student works!</p> -->
+<div class="card">
+  <p-toast></p-toast>
+  <p-toolbar styleClass="mb-4 gap-2">
+      <ng-template pTemplate="left">
+          <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+          <button pButton pRipple [label]="'Delete'" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedStudents()" [disabled]="!selectedStudents || !selectedStudents.length"></button>
+      </ng-template>
+
+      <ng-template pTemplate="right">
+          <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
+          <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-help"></button>
+      </ng-template>
+  </p-toolbar>
+
+  <p-table
+      #dt1
+      [value]="students"
+      [rows]="10"
+      [paginator]="true"
+      [globalFilterFields]="['name', 'gender', 'address', 'phoneNumber', 'email']"
+      [tableStyle]="{ 'min-width': '70rem' }"
+      [(selection)]="selectedStudents"
+      [rowHover]="true"
+      dataKey="id"
+      currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries"
+      [showCurrentPageReport]="true"
+  >
+      <ng-template pTemplate="caption">
+          <div class="flex align-items-center justify-content-between">
+              <h5 class="m-0">Manage Products</h5>
+              <span class="p-input-icon-left">
+                  <i class="pi pi-search"></i>
+                  <input pInputText type="text" (input)="dt1.filterGlobal($any($event.target).value, 'contains')" placeholder="Search..."  />
+              </span>
+          </div>
+      </ng-template>
+      <ng-template pTemplate="header">
+          <tr>
+              <th style="width: 4rem">
+                  <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+              </th>
+              <th pSortableColumn="name" style="min-width:12rem">Họ Tên<p-sortIcon field="name"></p-sortIcon></th>
+              <th>Hình ảnh</th>
+              <th pSortableColumn="dateOfBirth">Năm sinh<p-sortIcon field="dateOfBirth"></p-sortIcon></th>
+              <th pSortableColumn="address" style="min-width:12rem">Đia chỉ<p-sortIcon field="address"></p-sortIcon></th>
+              <th pSortableColumn="gender">Giới tính<p-sortIcon field="gender"></p-sortIcon></th>
+              <th pSortableColumn="phoneNumber" style="min-width:5rem">Điện thoại<p-sortIcon field="phoneNumber"></p-sortIcon></th>
+              <th pSortableColumn="email">Email<p-sortIcon field="email"></p-sortIcon></th>
+              <th></th>
+          </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-student>
+          <tr>
+              <td>
+                  <p-tableCheckbox [value]="student"></p-tableCheckbox>
+              </td>
+              <td>{{ student.name }}</td>
+              <td><img [src]="student.image" [alt]="student.name" width="50" class="shadow-4" /></td>
+              <td>{{student.dateOfBirth | date:'dd/MM/yyyy'}}</td>
+              <td>{{ student.address}}</td>
+              <td>{{ student.gender ? 'Nữ' : 'Nam' }}</td>
+              <td>{{student.phoneNumber}}</td>
+              <td>{{student.email}}</td>
+
+              <td>
+                  <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editStudent(student)"></button>
+                  <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deleteStudent(student)"></button>
+              </td>
+          </tr>
+      </ng-template>
+      <ng-template pTemplate="summary">
+          <div class="flex align-items-center justify-content-between">In total there are {{ students ? students.length : 0 }} students.</div>
+      </ng-template>
+  </p-table>
+</div>
+
+<p-dialog [(visible)]="studentDialog" [style]="{ width: '450px' }" header="Student Details" [modal]="true" styleClass="p-fluid">
+  <ng-template pTemplate="content">
+      <img [src]="student.image" [alt]="student.image" class="block m-auto pb-3" *ngIf="student.image" />
+      <div class="field">
+          <label for="name">Họ Tên</label>
+          <input type="text" pInputText  id="name" [(ngModel)]="student.name" required autofocus />
+          <small class="p-error" *ngIf="submitted && !student.name">Name is required.</small>
+      </div>
+      <div class="field">
+        <label for="dateOfBirth">Ngày sinh</label>
+        <p-calendar   id="dateOfBirth" [(ngModel)]="student.dateOfBirth" />
+
+      </div>
+      <div class="flex flex-wrap gap-3 field">
+        <div class="flex align-items-center">
+            <p-radioButton name="gender" value="false" [(ngModel)]="student.gender" inputId="gender"></p-radioButton>
+            <label for="gender" class="ml-2">Male</label>
+        </div>
+
+        <div class="flex align-items-center">
+            <p-radioButton name="gender" value="true" [(ngModel)]="student.gender" inputId="gender"></p-radioButton>
+            <label for="gender" class="ml-2">Female</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="address">Địa chỉ</label>
+        <textarea id="address" pInputTextarea [(ngModel)]="student.address" required rows="3" cols="20"></textarea>
+        <small class="p-error" *ngIf="submitted && !student.address">address is required.</small>
+      </div>
+      <div class="formgrid grid">
+          <div class="field col">
+              <label for="phoneNumber">Số điện thoại</label>
+
+              <input type="text" pInputText  id="name" [(ngModel)]="student.phoneNumber" required autofocus />
+              <small class="p-error" *ngIf="submitted && !student.phoneNumber">phoneNumber is required.</small>
+          </div>
+          <div class="field col">
+              <label for="quantity">Email</label>
+              <input type="text" pInputText  id="email" [(ngModel)]="student.email " required autofocus />
+              <small class="p-error" *ngIf="submitted && !student.email">Email is required.</small>
+          </div>
+      </div>
+  </ng-template>
+
+  <ng-template pTemplate="footer">
+      <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+      <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="saveStudent()"></button>
+  </ng-template>
+</p-dialog>
+<p-confirmDialog [style]="{ width: '450px' }"></p-confirmDialog>
